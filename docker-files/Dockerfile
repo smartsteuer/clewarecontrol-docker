@@ -10,30 +10,34 @@ MAINTAINER Eike <me@eike-hirsch.net>
 CMD ["/sbin/my_init"]
 
 # ...put your own build instructions here...
-ADD clewarecontrol-4.0 /usr/local/clewarecontrol
-
+ENV CLEWARECONTROL_VERSION 4.0.0
 # we have to compile the clewarecontrol sources.
 # Therefor we need a compiler and other dependencies
-RUN apt-get update
+RUN apt-get update && \
+	apt-get -y install \
+		build-essential \
+		libhidapi-dev \
+		pkg-config \
+		wget
 
-RUN apt-get -y install \
-	build-essential \
-	libhidapi-dev
+# download the latest distro
+RUN wget https://github.com/flok99/clewarecontrol/archive/${CLEWARECONTROL_VERSION}.tar.gz
+# unpack
+RUN tar xzf ${CLEWARECONTROL_VERSION}.tar.gz
 
-RUN apt-get -y install pkg-config
-
-# comileing...
-RUN cd /usr/local/clewarecontrol && \
+# comile
+RUN cd clewarecontrol-${CLEWARECONTROL_VERSION} && \
 	make install
 
 # now that we have the executable we can delete everything else again.
 RUN apt-get -y --purge remove \
 	build-essential \
-	pkg-config
+	pkg-config \
+	wget
 
 RUN apt-get -y autoremove
 
-RUN rm -r /usr/local/clewarecontrol
+RUN rm -r clewarecontrol-${CLEWARECONTROL_VERSION}
 
 # ...put your own build instructions here... END
 
